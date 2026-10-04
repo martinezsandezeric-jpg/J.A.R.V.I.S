@@ -4,7 +4,7 @@ from google import genai
 
 app = Flask(__name__)
 
-# Inicializar el cliente de Gemini usando la variable de entorno de Render
+# Inicializar el cliente de Gemini con la variable de entorno
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 HTML_TEMPLATE = """
