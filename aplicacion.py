@@ -98,7 +98,7 @@ HTML_TEMPLATE = """
     <h1>J.A.R.V.I.S.</h1>
     <div class="chat-container">
         <div class="chat-messages" id="chat-messages">
-            <div class="message jarvis-message">Hola Señor, sistemas en línea. ¿Qué orden desea ejecutar?</div>
+            <div class="message jarvis-message" id="welcome-msg">Hola Señor, sistemas en línea. ¿Qué orden desea ejecutar?</div>
         </div>
         <div class="chat-input-container">
             <input type="text" id="user-input" placeholder="Escribe una orden para JARVIS..." onkeydown="if(event.key === 'Enter') sendMessage()">
@@ -107,6 +107,23 @@ HTML_TEMPLATE = """
     </div>
 
     <script>
+        // Función para hacer que JARVIS hable en voz alta
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = 1.0;
+                utterance.pitch = 0.9; // Tono ligeramente más grave / robótico
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Hablar el mensaje de bienvenida al cargar la página
+        window.onload = () => {
+            const welcomeText = document.getElementById('welcome-msg').innerText;
+            setTimeout(() => speak(welcomeText), 1000);
+        };
+
         async function sendMessage() {
             const input = document.getElementById('user-input');
             const text = input.value.trim();
@@ -124,10 +141,17 @@ HTML_TEMPLATE = """
                     body: JSON.stringify({ message: text })
                 });
                 const data = await response.json();
+                
                 messagesDiv.innerHTML += `<div class="message jarvis-message">${data.reply}</div>`;
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                // ¡JARVIS te habla en voz alta!
+                speak(data.reply);
+
             } catch (error) {
-                messagesDiv.innerHTML += `<div class="message jarvis-message">Error de conexión con los servidores principales, Señor.</div>`;
+                const errorMsg = "Error de conexión con los servidores principales, Señor.";
+                messagesDiv.innerHTML += `<div class="message jarvis-message">${errorMsg}</div>`;
+                speak(errorMsg);
             }
         }
     </script>
@@ -146,7 +170,6 @@ def chat():
   user_data = request.get_json()
   user_message = user_data.get("message", "").lower()
 
-  # Inteligencia ampliada de JARVIS
   if "hola" in user_message or "saludos" in user_message:
     reply = (
         "Hola Señor. Es un placer verle de nuevo. Todos los sistemas operativos"
