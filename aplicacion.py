@@ -1,7 +1,11 @@
 import os
 from flask import Flask, jsonify, render_template_string, request
+from google import genai
 
 app = Flask(__name__)
+
+# Inicializar el cliente de Gemini usando la variable de entorno de Render
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -107,18 +111,16 @@ HTML_TEMPLATE = """
     </div>
 
     <script>
-        // Función para hacer que JARVIS hable en voz alta
         function speak(text) {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'es-ES';
                 utterance.rate = 1.0;
-                utterance.pitch = 0.9; // Tono ligeramente más grave / robótico
+                utterance.pitch = 0.9;
                 window.speechSynthesis.speak(utterance);
             }
         }
 
-        // Hablar el mensaje de bienvenida al cargar la página
         window.onload = () => {
             const welcomeText = document.getElementById('welcome-msg').innerText;
             setTimeout(() => speak(welcomeText), 1000);
@@ -144,8 +146,6 @@ HTML_TEMPLATE = """
                 
                 messagesDiv.innerHTML += `<div class="message jarvis-message">${data.reply}</div>`;
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-                // ¡JARVIS te habla en voz alta!
                 speak(data.reply);
 
             } catch (error) {
@@ -168,32 +168,29 @@ def home():
 @app.route("/chat", methods=["POST"])
 def chat():
   user_data = request.get_json()
-  user_message = user_data.get("message", "").lower()
+  user_message = user_data.get("message", "")
 
-  if "hola" in user_message or "saludos" in user_message:
-    reply = (
-        "Hola Señor. Es un placer verle de nuevo. Todos los sistemas operativos"
-        " funcionan al 100%."
+  if not user_message:
+    return jsonify({"reply": "No he recibido ninguna instrucción, Señor."})
+
+  try:
+    prompt_sistema = (
+        "Eres J.A.R.V.I.S., la avanzada inteligencia artificial de Tony"
+        " Stark. Respondes siempre en español de manera educada, leal,"
+        " ligeramente irónica y muy profesional, refiriéndote al usuario"
+        " como 'Señor'. Mantén las respuestas concisas (ideales para ser"
+        " leídas en voz alta)."
     )
-  elif "estado" in user_message or "diagnóstico" in user_message:
-    reply = (
-        "Diagnóstico del sistema: Servidores en Render estables, núcleo Flask"
-        " operativo y enlace web seguro al 100%, Señor."
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=f"{prompt_sistema}\n\nInstrucción del usuario: {user_message}",
     )
-  elif "protocolo" in user_message:
+    reply = response.text
+  except Exception as e:
     reply = (
-        "Entendido, Señor. Activando protocolos de seguridad y optimización"
-        " de recursos."
-    )
-  elif "creador" in user_message or "quién te creó" in user_message:
-    reply = (
-        "Fui creado por usted, Señor, con la asistencia de los mejores sistemas"
-        " de desarrollo."
-    )
-  else:
-    reply = (
-        f"Comando '{user_message}' procesado en los servidores. Mis"
-        " capacidades cognitivas siguen expandiéndose, Señor."
+        "Lo siento Señor, mis circuitos cognitivos experimentaron una breve"
+        " interrupción con la API."
     )
 
   return jsonify({"reply": reply})
