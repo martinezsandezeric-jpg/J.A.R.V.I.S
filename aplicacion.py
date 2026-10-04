@@ -14,58 +14,156 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J.A.R.V.I.S.</title>
+    <title>J.A.R.V.I.S. - Panel de Control</title>
     <style>
-        body { background-color: #050b14; color: #00ffff; font-family: 'Courier New', monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; }
-        h1 { text-align: center; font-size: 1.5rem; text-shadow: 0 0 10px #00ffff; margin-bottom: 10px; }
-        #chat-container { flex: 1; border: 1px solid #00ffff; border-radius: 5px; padding: 15px; overflow-y: auto; background: rgba(0, 20, 40, 0.8); box-shadow: inset 0 0 15px rgba(0,255,255,0.2); margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .message { padding: 10px 15px; border-radius: 4px; max-width: 80%; line-height: 1.4; word-break: break-word; }
-        .user-message { background: rgba(0, 100, 150, 0.4); border: 1px solid #00aaff; align-self: flex-end; color: #ffffff; }
-        .jarvis-message { background: rgba(0, 255, 255, 0.1); border: 1px solid #00ffff; align-self: flex-start; color: #00ffff; box-shadow: 0 0 5px rgba(0,255,255,0.1); }
-        .input-area { display: flex; gap: 10px; }
-        input[type="text"] { flex: 1; background: #020d1a; border: 1px solid #00ffff; color: #00ffff; padding: 12px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 1rem; outline: none; }
-        input[type="text"]::placeholder { color: rgba(0,255,255,0.4); }
-        button { background: #00ffff; color: #020d1a; border: none; padding: 0 20px; border-radius: 4px; font-weight: bold; font-family: 'Courier New', monospace; cursor: pointer; text-shadow: none; transition: 0.2s; }
-        button:hover { background: #00b3b3; box-shadow: 0 0 10px #00ffff; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0b0f19;
+            color: #38bdf8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+            margin-bottom: 10px;
+        }
+        #chat-container {
+            flex: 1;
+            width: 100%;
+            max-width: 500px;
+            background: rgba(0, 20, 40, 0.8);
+            border: 1px solid #1e3a8a;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+            box-shadow: 0 0 20px rgba(30, 58, 138, 0.5);
+            overflow: hidden;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-break: break-word;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        .user-message {
+            background: rgba(0, 100, 150, 0.4);
+            border: 1px solid #38bdf8;
+            color: #fff;
+            align-self: flex-end;
+        }
+        .jarvis-message {
+            background: #1f2937;
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            align-self: flex-start;
+        }
+        .input-area {
+            display: flex;
+            padding: 10px;
+            background: #0f172a;
+            border-top: 1px solid #1e3a8a;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #00ffff;
+            border-radius: 4px;
+            background: #000fff;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            outline: none;
+        }
+        input[type="text"]::placeholder {
+            color: rgba(0, 255, 255, 0.4);
+        }
+        button {
+            background: #000f19;
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 10px 20px;
+            margin-left: 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #0ea5e9;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
     <h1>J.A.R.V.I.S. SYSTEM ONLINE</h1>
     <div id="chat-container">
-        <div class="message jarvis-message">Hola Señor, sistemas en línea. ¿Qué orden desea ejecutar?</div>
-    </div>
-    <div class="input-area">
-        <input type="text" id="user-input" placeholder="Escribe una orden para JARVIS..." autofocus>
-        <button onclick="sendMessage()">Enviar</button>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message jarvis-message" id="welcome-msg">Hola Señor, sistemas en línea. ¿Qué orden desea ejecutar?</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Escribe una orden para JARVIS..." autofocus onkeydown="if(event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
     </div>
 
     <script>
-        const inputField = document.getElementById('user-input');
-        inputField.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') { sendMessage(); }
-        });
+        function speak(text) {
+            if ('SpeechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = 1.0;
+                utterance.pitch = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        window.onload = () => {
+            const welcomeText = document.getElementById('welcome-msg').innerText;
+            setTimeout(() => speak(welcomeText), 1000);
+        }
 
         async function sendMessage() {
+            const inputField = document.getElementById('user-input');
             const text = inputField.value.trim();
             if (!text) return;
 
-            const chatContainer = document.getElementById('chat-container');
+            const messagesDiv = document.getElementById('chat-messages');
             
-            // Mensaje del usuario
+            // Mensaje usuario
             const userDiv = document.createElement('div');
             userDiv.className = 'message user-message';
             userDiv.textContent = text;
-            chatContainer.appendChild(userDiv);
+            messagesDiv.appendChild(userDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
             
             inputField.value = '';
-            chatContainer.scrollTop = chatContainer.scrollHeight;
 
             // Mensaje temporal de espera
             const jarvisDiv = document.createElement('div');
             jarvisDiv.className = 'message jarvis-message';
             jarvisDiv.textContent = 'Procesando orden...';
-            chatContainer.appendChild(jarvisDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            messagesDiv.appendChild(jarvisDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
             try {
                 const response = await fetch('/chat', {
@@ -74,15 +172,25 @@ HTML_TEMPLATE = """
                     body: JSON.stringify({ message: text })
                 });
                 const data = await response.json();
-                if (data.reply) {
-                    jarvisDiv.textContent = data.reply;
-                } else {
-                    jarvisDiv.textContent = 'Lo siento Señor, mis circuitos cognitivos experimentaron una breve interrupción con la API.';
-                }
+                
+                messagesDiv.lastChild.remove();
+                
+                const replyDiv = document.createElement('div');
+                replyDiv.className = 'message jarvis-message';
+                replyDiv.textContent = data.reply;
+                messagesDiv.appendChild(replyDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                speak(data.reply);
+
             } catch (error) {
-                jarvisDiv.textContent = 'Error de conexión con el núcleo central.';
+                messagesDiv.lastChild.remove();
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message jarvis-message';
+                errorDiv.textContent = 'Error de conexión con el núcleo central.';
+                messagesDiv.appendChild(errorDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
-            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
     </script>
 </body>
@@ -96,18 +204,27 @@ def home():
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
-        user_message = request.json.get('message', '')
+        user_message = request.json.get('message')
         if not user_message:
             return jsonify({'reply': 'No se ha recibido ninguna instrucción, Señor.'})
-        
-        # Llamada al modelo oficial de Gemini
+
+        # Prompt de sistema integrado para guiar la personalidad de JARVIS
+        prompt_sistema = (
+            "Eres J.A.R.V.I.S., la avanzada inteligencia artificial de Tony Stark. "
+            "Respondes siempre en español de manera educada, leal, ligeramente irónica "
+            "y muy profesional, refiriéndote al usuario como 'Señor'. "
+            "Mantén las respuestas concisas (ideales para ser leídas en voz alta)."
+        )
+
+        # Llamada al modelo oficial de Gemini con la nueva librería
         response = client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=user_message,
+            contents=[prompt_sistema, "\nInstrucción del usuario: ", user_message]
         )
         return jsonify({'reply': response.text})
+
     except Exception as e:
-        return jsonify({'reply': f'Lo siento Señor, mis circuitos cognitivos experimentaron una breve interrupción con la API.'})
+        return jsonify({'reply': f'Error técnico: {str(e)}'})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
