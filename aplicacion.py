@@ -3,7 +3,6 @@ from flask import Flask, jsonify, render_template_string, request
 
 app = Flask(__name__)
 
-# Plantilla HTML con interfaz de chat interactiva
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="es">
@@ -114,22 +113,17 @@ HTML_TEMPLATE = """
             if (!text) return;
 
             const messagesDiv = document.getElementById('chat-messages');
-            
-            // Mostrar mensaje del usuario
             messagesDiv.innerHTML += `<div class="message user-message">${text}</div>`;
             input.value = '';
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
             try {
-                // Enviar petición al servidor Flask
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text })
                 });
                 const data = await response.json();
-
-                // Mostrar respuesta de JARVIS
                 messagesDiv.innerHTML += `<div class="message jarvis-message">${data.reply}</div>`;
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             } catch (error) {
@@ -152,15 +146,31 @@ def chat():
   user_data = request.get_json()
   user_message = user_data.get("message", "").lower()
 
-  # Respuestas básicas iniciales de JARVIS
-  if "hola" in user_message:
-    reply = "Hola Señor. Todos los sistemas operativos funcionan al 100%."
-  elif "estado" in user_message:
-    reply = "Los servidores en Render están estables y operativos, Señor."
+  # Inteligencia ampliada de JARVIS
+  if "hola" in user_message or "saludos" in user_message:
+    reply = (
+        "Hola Señor. Es un placer verle de nuevo. Todos los sistemas operativos"
+        " funcionan al 100%."
+    )
+  elif "estado" in user_message or "diagnóstico" in user_message:
+    reply = (
+        "Diagnóstico del sistema: Servidores en Render estables, núcleo Flask"
+        " operativo y enlace web seguro al 100%, Señor."
+    )
+  elif "protocolo" in user_message:
+    reply = (
+        "Entendido, Señor. Activando protocolos de seguridad y optimización"
+        " de recursos."
+    )
+  elif "creador" in user_message or "quién te creó" in user_message:
+    reply = (
+        "Fui creado por usted, Señor, con la asistencia de los mejores sistemas"
+        " de desarrollo."
+    )
   else:
     reply = (
-        f"Comando recibido: '{user_message}'. Procesador de IA en proceso de"
-        " integración."
+        f"Comando '{user_message}' procesado en los servidores. Mis"
+        " capacidades cognitivas siguen expandiéndose, Señor."
     )
 
   return jsonify({"reply": reply})
