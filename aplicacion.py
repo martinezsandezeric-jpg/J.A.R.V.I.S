@@ -4,10 +4,8 @@ from flask import Flask, render_template_string, request, jsonify
 
 app = Flask(__name__)
 
-# Configurar la API key clásica
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# Usar el modelo estándar y ultra estable
 generation_config = {
     "temperature": 0.7,
     "max_output_tokens": 800,
