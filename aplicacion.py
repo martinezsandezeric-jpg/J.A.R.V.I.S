@@ -149,7 +149,7 @@ HTML_TEMPLATE = """
 
             const messagesDiv = document.getElementById('chat-messages');
             
-            // Mensaje usuario
+            # Mensaje usuario
             const userDiv = document.createElement('div');
             userDiv.className = 'message user-message';
             userDiv.textContent = text;
@@ -158,7 +158,7 @@ HTML_TEMPLATE = """
             
             inputField.value = '';
 
-            // Mensaje temporal de espera
+            # Mensaje temporal de espera
             const jarvisDiv = document.createElement('div');
             jarvisDiv.className = 'message jarvis-message';
             jarvisDiv.textContent = 'Procesando orden...';
@@ -216,9 +216,9 @@ def chat():
             "Mantén las respuestas concisas (ideales para ser leídas en voz alta)."
         )
 
-        # Llamada al modelo oficial de Gemini con la nueva librería
+        # Llamada al modelo actualizado con la librería oficial
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.8-flash',
             contents=[prompt_sistema, "\nInstrucción del usuario: ", user_message]
         )
         return jsonify({'reply': response.text})
