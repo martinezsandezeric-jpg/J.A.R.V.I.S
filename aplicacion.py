@@ -217,13 +217,13 @@ def chat():
     for intento in range(intentos):
         try:
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-3.8-flash',
                 contents=[prompt_sistema, "\nInstrucción del usuario: ", user_message]
             )
             return jsonify({'reply': response.text})
         except Exception as e:
             if intento < intentos - 1:
-                time.sleep(1)
+                time.sleep(2) # Espera 2 segundos entre reintentos para capear el 503
                 continue
             else:
                 return jsonify({'reply': f'Error técnico: {str(e)}'})
