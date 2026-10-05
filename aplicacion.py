@@ -149,7 +149,6 @@ HTML_TEMPLATE = """
 
             const messagesDiv = document.getElementById('chat-messages');
             
-            # Mensaje usuario
             const userDiv = document.createElement('div');
             userDiv.className = 'message user-message';
             userDiv.textContent = text;
@@ -158,7 +157,6 @@ HTML_TEMPLATE = """
             
             inputField.value = '';
 
-            # Mensaje temporal de espera
             const jarvisDiv = document.createElement('div');
             jarvisDiv.className = 'message jarvis-message';
             jarvisDiv.textContent = 'Procesando orden...';
@@ -208,7 +206,6 @@ def chat():
         if not user_message:
             return jsonify({'reply': 'No se ha recibido ninguna instrucción, Señor.'})
 
-        # Prompt de sistema integrado para guiar la personalidad de JARVIS
         prompt_sistema = (
             "Eres J.A.R.V.I.S., la avanzada inteligencia artificial de Tony Stark. "
             "Respondes siempre en español de manera educada, leal, ligeramente irónica "
@@ -216,7 +213,6 @@ def chat():
             "Mantén las respuestas concisas (ideales para ser leídas en voz alta)."
         )
 
-        # Llamada al modelo actualizado con la librería oficial
         response = client.models.generate_content(
             model='gemini-3.8-flash',
             contents=[prompt_sistema, "\nInstrucción del usuario: ", user_message]
