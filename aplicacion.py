@@ -213,18 +213,17 @@ def chat():
         "Mantén las respuestas concisas (ideales para ser leídas en voz alta)."
     )
 
-    # Sistema de reintentos automáticos para evitar errores 503 por saturación temporal
     intentos = 3
     for intento in range(intentos):
         try:
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-2.0-flash',
                 contents=[prompt_sistema, "\nInstrucción del usuario: ", user_message]
             )
             return jsonify({'reply': response.text})
         except Exception as e:
             if intento < intentos - 1:
-                time.sleep(1) # Espera 1 segundo antes de reintentar
+                time.sleep(1)
                 continue
             else:
                 return jsonify({'reply': f'Error técnico: {str(e)}'})
