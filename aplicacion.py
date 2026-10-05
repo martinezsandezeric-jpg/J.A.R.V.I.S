@@ -1,4 +1,5 @@
 import os
+import time
 from flask import Flask, render_template_string, request, jsonify
 from google import genai
 
@@ -201,26 +202,32 @@ def home():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    try:
-        user_message = request.json.get('message')
-        if not user_message:
-            return jsonify({'reply': 'No se ha recibido ninguna instrucción, Señor.'})
+    user_message = request.json.get('message')
+    if not user_message:
+        return jsonify({'reply': 'No se ha recibido ninguna instrucción, Señor.'})
 
-        prompt_sistema = (
-            "Eres J.A.R.V.I.S., la avanzada inteligencia artificial de Tony Stark. "
-            "Respondes siempre en español de manera educada, leal, ligeramente irónica "
-            "y muy profesional, refiriéndote al usuario como 'Señor'. "
-            "Mantén las respuestas concisas (ideales para ser leídas en voz alta)."
-        )
+    prompt_sistema = (
+        "Eres J.A.R.V.I.S., la avanzada inteligencia artificial de Tony Stark. "
+        "Respondes siempre en español de manera educada, leal, ligeramente irónica "
+        "y muy profesional, refiriéndote al usuario como 'Señor'. "
+        "Mantén las respuestas concisas (ideales para ser leídas en voz alta)."
+    )
 
-        response = client.models.generate_content(
-            model='gemini-3.8-flash',
-            contents=[prompt_sistema, "\nInstrucción del usuario: ", user_message]
-        )
-        return jsonify({'reply': response.text})
-
-    except Exception as e:
-        return jsonify({'reply': f'Error técnico: {str(e)}'})
+    # Sistema de reintentos automáticos para evitar errores 503 por saturación temporal
+    intentos = 3
+    for intento in range(intentos):
+        try:
+            response = client.models.generate_content(
+                model='gemini-1.5-flash',
+                contents=[prompt_sistema, "\nInstrucción del usuario: ", user_message]
+            )
+            return jsonify({'reply': response.text})
+        except Exception as e:
+            if intento < intentos - 1:
+                time.sleep(1) # Espera 1 segundo antes de reintentar
+                continue
+            else:
+                return jsonify({'reply': f'Error técnico: {str(e)}'})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
