@@ -1,14 +1,19 @@
 import os
-import time
+import google.generativeai as genai
 from flask import Flask, render_template_string, request, jsonify
-from google import genai
 
 app = Flask(__name__)
 
-# Inicializar el cliente de Gemini usando la variable de entorno configurada en Render
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+# Configurar la API key clásica
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# Interfaz HTML/CSS integrada para JARVIS
+# Usar el modelo estándar y ultra estable
+generation_config = {
+    "temperature": 0.7,
+    "max_output_tokens": 800,
+}
+model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=generation_config)
+
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="es">
@@ -42,12 +47,10 @@ HTML_TEMPLATE = """
             background: rgba(0, 20, 40, 0.8);
             border: 1px solid #1e3a8a;
             border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(30, 58, 138, 0.5);
             margin-bottom: 15px;
             display: flex;
             flex-direction: column;
-            height: 70vh;
-            box-shadow: 0 0 20px rgba(30, 58, 138, 0.5);
             overflow: hidden;
         }
         .chat-messages {
@@ -87,21 +90,21 @@ HTML_TEMPLATE = """
         input[type="text"] {
             flex: 1;
             padding: 10px;
-            border: 1px solid #00ffff;
+            border: 1px solid #38bdf8;
             border-radius: 4px;
-            background: #000fff;
-            color: #00ffff;
+            background: #0b0f19;
+            color: #38bdf8;
             font-family: 'Courier New', monospace;
             font-size: 1rem;
             outline: none;
         }
         input[type="text"]::placeholder {
-            color: rgba(0, 255, 255, 0.4);
+            color: rgba(56, 189, 248, 0.4);
         }
         button {
-            background: #000f19;
-            border: 1px solid #00ffff;
-            color: #00ffff;
+            background: #0b0f19;
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
             padding: 10px 20px;
             margin-left: 5px;
             border-radius: 4px;
@@ -129,7 +132,7 @@ HTML_TEMPLATE = """
 
     <script>
         function speak(text) {
-            if ('SpeechSynthesis' in window) {
+            if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'es-ES';
                 utterance.rate = 1.0;
@@ -206,27 +209,19 @@ def chat():
     if not user_message:
         return jsonify({'reply': 'No se ha recibido ninguna instrucción, Señor.'})
 
-    prompt_sistema = (
+    prompt_completo = (
         "Eres J.A.R.V.I.S., la avanzada inteligencia artificial de Tony Stark. "
         "Respondes siempre en español de manera educada, leal, ligeramente irónica "
         "y muy profesional, refiriéndote al usuario como 'Señor'. "
-        "Mantén las respuestas concisas (ideales para ser leídas en voz alta)."
+        "Mantén las respuestas concisas (ideales para ser leídas en voz alta).\n\n"
+        f"Instrucción del usuario: {user_message}"
     )
 
-    intentos = 3
-    for intento in range(intentos):
-        try:
-            response = client.models.generate_content(
-                model='gemini-3.8-flash',
-                contents=[prompt_sistema, "\nInstrucción del usuario: ", user_message]
-            )
-            return jsonify({'reply': response.text})
-        except Exception as e:
-            if intento < intentos - 1:
-                time.sleep(2) # Espera 2 segundos entre reintentos para capear el 503
-                continue
-            else:
-                return jsonify({'reply': f'Error técnico: {str(e)}'})
+    try:
+        response = model.generate_content(prompt_completo)
+        return jsonify({'reply': response.text})
+    except Exception as e:
+        return jsonify({'reply': f'Error técnico: {str(e)}'})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
