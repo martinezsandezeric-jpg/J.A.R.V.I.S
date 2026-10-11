@@ -1,11 +1,21 @@
 import os
 from flask import Flask, render_template_string, request, jsonify
-from google import genai
+import vertexai
+from vertexai.generative_models import GenerativeModel
 
 app = Flask(__name__)
 
-# Se inicializa el cliente oficial de Google GenAI usando la API KEY
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+# Inicialización nativa de Vertex AI en Google Cloud
+# En Cloud Run, el proyecto y la región se detectan automáticamente del entorno
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "su-proyecto-cloud")
+LOCATION = os.environ.get("GOOGLE_CLOUD_REGION", "us-central1")
+
+try:
+    vertexai.init(project=PROJECT_ID, location=LOCATION)
+    # Usamos el modelo estándar empresarial de Vertex AI
+    cloud_model = GenerativeModel("gemini-1.5-flash")
+except Exception as e:
+    cloud_model = None
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -13,7 +23,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J.A.R.V.I.S. - Panel de Control</title>
+    <title>J.A.R.V.I.S. - Cloud Console</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -91,9 +101,6 @@ HTML_TEMPLATE = """
             font-size: 1rem;
             outline: none;
         }
-        input[type="text"]::placeholder {
-            color: rgba(56, 189, 248, 0.4);
-        }
         button {
             background: #0b0f19;
             border: 1px solid #38bdf8;
@@ -112,13 +119,13 @@ HTML_TEMPLATE = """
     </style>
 </head>
 <body>
-    <h1>J.A.R.V.I.S. SYSTEM ONLINE</h1>
+    <h1>J.A.R.V.I.S. CLOUD RUN SYSTEM</h1>
     <div id="chat-container">
         <div class="chat-messages" id="chat-messages">
-            <div class="message jarvis-message" id="welcome-msg">Hola Señor, sistemas en línea. ¿Qué orden desea ejecutar?</div>
+            <div class="message jarvis-message" id="welcome-msg">Hola Señor, núcleo de Google Cloud en línea. ¿Qué orden desea ejecutar?</div>
         </div>
         <div class="input-area">
-            <input type="text" id="user-input" placeholder="Escribe una orden para JARVIS..." autofocus onkeydown="if(event.key === 'Enter') sendMessage()">
+            <input type="text" id="user-input" placeholder="Escribe una orden..." autofocus onkeydown="if(event.key === 'Enter') sendMessage()">
             <button onclick="sendMessage()">Enviar</button>
         </div>
     </div>
@@ -156,7 +163,7 @@ HTML_TEMPLATE = """
 
             const jarvisDiv = document.createElement('div');
             jarvisDiv.className = 'message jarvis-message';
-            jarvisDiv.textContent = 'Procesando orden...';
+            jarvisDiv.textContent = 'Procesando en la nube...';
             messagesDiv.appendChild(jarvisDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
@@ -182,7 +189,7 @@ HTML_TEMPLATE = """
                 messagesDiv.lastChild.remove();
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'message jarvis-message';
-                errorDiv.textContent = 'Error de conexión con el núcleo central.';
+                errorDiv.textContent = 'Error de conexión con Google Cloud.';
                 messagesDiv.appendChild(errorDiv);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
@@ -202,6 +209,9 @@ def chat():
     if not user_message:
         return jsonify({'reply': 'No se ha recibido ninguna instrucción, Señor.'})
 
+    if not cloud_model:
+        return jsonify({'reply': 'Error: El entorno de Google Cloud Vertex AI no está inicializado.'})
+
     prompt_completo = (
         "Eres J.A.R.V.I.S., la avanzada inteligencia artificial de Tony Stark. "
         "Respondes siempre en español de manera educada, leal, ligeramente irónica "
@@ -211,15 +221,11 @@ def chat():
     )
 
     try:
-        # Petición directa usando la llamada estándar del cliente
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt_completo
-        )
+        response = cloud_model.generate_content(prompt_completo)
         return jsonify({'reply': response.text})
     except Exception as e:
-        return jsonify({'reply': f'Error técnico: {str(e)}'})
+        return jsonify({'reply': f'Error en Cloud Run: {str(e)}'})
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
+    port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port)
