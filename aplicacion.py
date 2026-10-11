@@ -4,7 +4,7 @@ from google import genai
 
 app = Flask(__name__)
 
-# Inicializar cliente oficial de Gemini
+# Se inicializa el cliente oficial de Google GenAI usando la API KEY
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 HTML_TEMPLATE = """
@@ -211,7 +211,7 @@ def chat():
     )
 
     try:
-        # Modelo oficial actualizado sin problemas de 404
+        # Petición directa usando la llamada estándar del cliente
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt_completo
