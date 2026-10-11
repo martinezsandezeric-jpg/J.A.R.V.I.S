@@ -4,14 +4,17 @@ from flask import Flask, render_template_string, request, jsonify
 
 app = Flask(__name__)
 
+# Configurar la API key clásica de Gemini
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
+# Configuración de generación para respuestas concisas y profesionales
 generation_config = {
     "temperature": 0.7,
     "max_output_tokens": 800,
 }
 model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=generation_config)
 
+# Interfaz visual de J.A.R.V.I.S. con síntesis de voz integrada
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="es">
