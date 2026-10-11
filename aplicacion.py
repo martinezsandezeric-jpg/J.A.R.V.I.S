@@ -1,20 +1,12 @@
 import os
-import google.generativeai as genai
 from flask import Flask, render_template_string, request, jsonify
+from google import genai
 
 app = Flask(__name__)
 
-# Configurar la API key clásica de Gemini
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+# Inicializar cliente oficial de Gemini
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# Configuración de generación para respuestas concisas y profesionales
-generation_config = {
-    "temperature": 0.7,
-    "max_output_tokens": 800,
-}
-model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=generation_config)
-
-# Interfaz visual de J.A.R.V.I.S. con síntesis de voz integrada
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="es">
@@ -219,7 +211,11 @@ def chat():
     )
 
     try:
-        response = model.generate_content(prompt_completo)
+        # Modelo oficial actualizado sin problemas de 404
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt_completo
+        )
         return jsonify({'reply': response.text})
     except Exception as e:
         return jsonify({'reply': f'Error técnico: {str(e)}'})
